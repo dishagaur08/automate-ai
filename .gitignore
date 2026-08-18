@@ -1,0 +1,29 @@
+# Dependencies
+node_modules/
+venv/
+
+# Environment variables
+.env
+
+# Python
+__pycache__/
+*.pyc
+
+# SQLite database (dev data — regenerated automatically on backend startup)
+*.db
+*.db-journal
+
+# Uploaded Knowledge Base documents (dev data)
+backend/uploads/
+
+# Build output
+dist/
+build/
+
+# OS / editor
+.DS_Store
+.vscode/
+.idea/
+
+# Logs
+*.log
