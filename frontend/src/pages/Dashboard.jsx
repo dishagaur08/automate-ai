@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { Users, UserCircle2, ListChecks, Bot } from 'lucide-react'
 import { useFetch } from '../hooks/useFetch'
 import { api } from '../lib/api'
+import { useAuth } from '../lib/auth'
 import { useToast } from '../components/ToastProvider'
 import WelcomeHero from '../components/WelcomeHero'
 import MetricCard from '../components/MetricCard'
@@ -46,12 +47,16 @@ const METRIC_DEFS = [
 
 export default function Dashboard() {
   const { showToast } = useToast()
+  const { user } = useAuth()
+
   const stats = useFetch('/api/dashboard/stats')
   const activity = useFetch('/api/dashboard/activity?limit=8')
   const leadAnalytics = useFetch('/api/dashboard/lead-analytics')
 
   const [approvalsOpen, setApprovalsOpen] = useState(false)
-  const approvals = useFetch(approvalsOpen ? '/api/approvals?status=Pending' : null)
+  const approvals = useFetch(
+    approvalsOpen ? '/api/approvals?status=Pending' : null
+  )
 
   async function handleApprovalAction(id, status) {
     try {
@@ -69,6 +74,7 @@ export default function Dashboard() {
     <div className="mx-auto max-w-7xl space-y-6 px-4 py-6 sm:px-6 lg:px-8 lg:py-8">
       {/* 1. Welcome / hero */}
       <WelcomeHero
+        userName={user?.name}
         aiActions={stats.data?.ai_actions}
         pendingApprovals={stats.data?.pending_approvals}
         loading={stats.loading}
@@ -79,7 +85,10 @@ export default function Dashboard() {
       {stats.error && !stats.loading ? (
         <div className="card-surface rounded-2xl p-5 text-center text-sm text-danger">
           {stats.error}{' '}
-          <button onClick={stats.refetch} className="ml-1 underline underline-offset-2">
+          <button
+            onClick={stats.refetch}
+            className="ml-1 underline underline-offset-2"
+          >
             Retry
           </button>
         </div>
@@ -87,6 +96,7 @@ export default function Dashboard() {
         <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
           {METRIC_DEFS.map((def, i) => {
             const raw = stats.data?.[def.key]
+
             return (
               <MetricCard
                 key={def.key}
@@ -95,7 +105,10 @@ export default function Dashboard() {
                   label: def.label,
                   icon: def.icon,
                   caption: def.caption,
-                  value: stats.loading || raw == null ? '—' : def.format(raw),
+                  value:
+                    stats.loading || raw == null
+                      ? '—'
+                      : def.format(raw),
                 }}
               />
             )
@@ -111,6 +124,7 @@ export default function Dashboard() {
           error={activity.error}
           onRetry={activity.refetch}
         />
+
         <LeadAnalyticsCard
           data={leadAnalytics.data}
           loading={leadAnalytics.loading}
@@ -127,7 +141,7 @@ export default function Dashboard() {
         onRetry={activity.refetch}
       />
 
-      {/* 6. AI assistant CTA — the visual highlight (static, not data-driven) */}
+      {/* 6. AI assistant CTA */}
       <AIAssistantCTA />
 
       <ApprovalsPanel
