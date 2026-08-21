@@ -1,338 +1,529 @@
-# AutomateAI — AI Business Automation Agent
+# 🤖 AutomateAI
 
-AutomateAI is an AI-powered business assistant that helps companies automate
-repetitive work. Instead of clicking through separate CRM, email, and
-knowledge-base tools, an employee can simply type a request — like *"Create
-a lead for Rahul from ABC company"* — and the AI understands it, takes the
-right action, and asks for approval before anything sensitive (like sending
-an email) goes out.
+### AI-Powered Business Automation Agent
 
-This repository is being built in small, incremental phases.
+<p align="center">
+  <b>One workspace. One AI agent. Smarter business automation.</b>
+</p>
 
-- **Phase 1** set up the basic project foundation: a frontend that renders,
-  and a backend API that responds.
-- **Phase 2** replaced the placeholder frontend with a polished dashboard
-  UI — sidebar navigation, key metrics, AI activity feed, lead analytics
-  chart, recent activity, and an AI Assistant highlight card. Everything on
-  screen used mock/sample data.
-- **Phase 3** adds a real backend: FastAPI + SQLAlchemy + SQLite,
-  with seeded demo data. The dashboard, Leads/CRM, Customers, and Tasks
-  pages fetch live data from the API instead of hard-coded numbers.
-  Sidebar navigation is fully wired with real routes. Phase 3.1 added
-  full CRUD (create/edit/delete) for Leads, Customers, and Tasks, plus a
-  working Review & Approval flow.
-- **Phase 4** adds the **AI Command Center** — a real,
-  tool-calling AI agent. A user can type a request like *"Create a lead
-  for Rahul Sharma from ABC Technologies"* and the AI selects the right
-  tool, validates the arguments, and performs the action through the
-  same backend logic the rest of the app uses. See
-  [`docs/ai-architecture.md`](docs/ai-architecture.md) for the full
-  request flow. RAG (searching uploaded company documents) and n8n
-  workflow automation are still **not** implemented — those come in
-  later phases.
-- **Phase 5** adds **Authentication**. Every account is a real
-  `User` row (bcrypt-hashed password); logging in returns a JWT that the
-  frontend attaches to every API request. All backend routes now require
-  a valid session, and every Lead, Customer, Task, Approval, Activity,
-  and AI command is scoped to the user who created it — including
-  everything the AI Command Center reads or writes. See
-  [Authentication](#authentication-phase-5) below.
-- **Phase 6** adds a user-scoped **Knowledge Base / RAG**: PDF/TXT/MD uploads,
-  chunking, optional embeddings, semantic retrieval, and cited answers.
-- **Phase 7** adds a real **Email workspace**: compose, save drafts, SMTP delivery,
-  email history, and a human approval gate for AI-generated follow-up emails.
+<p align="center">
+  <a href="https://automateai-web.onrender.com">
+    🚀 <b>Live Demo</b>
+  </a>
+  &nbsp; • &nbsp;
+  <a href="https://github.com/dishagaur08/automate-ai">
+    📦 <b>GitHub Repository</b>
+  </a>
+  &nbsp; • &nbsp;
+  <a href="https://automateai-api.onrender.com/health">
+    ❤️ <b>API Health</b>
+  </a>
+</p>
 
-## Project Structure
+---
 
-```
+## 🌟 Overview
+
+**AutomateAI** is an AI-powered business automation platform designed to help teams manage their everyday business operations from a single intelligent workspace.
+
+Instead of switching between multiple tools, users can manage:
+
+- 👥 Leads
+- 🏢 Customers
+- ✅ Tasks
+- 📊 Business analytics
+- 🤖 AI-powered commands
+- 📋 Approval workflows
+- 📚 Knowledge-base documents
+- 📧 Email operations
+
+The platform combines a modern React dashboard with a FastAPI backend, database-driven business logic, authentication, and an AI Command Center capable of understanding natural-language requests.
+
+---
+
+## 🚀 Live Application
+
+### 🌐 Frontend
+
+👉 **[Open AutomateAI Live Demo](https://automateai-web.onrender.com)**
+
+### ⚙️ Backend API
+
+👉 **[AutomateAI API](https://automateai-api.onrender.com)**
+
+### ❤️ API Health Check
+
+👉 **[Check API Health](https://automateai-api.onrender.com/health)**
+
+
+✨ Key Features
+🤖 AI Command Center
+
+Interact with AutomateAI using natural-language commands.
+
+Example:
+
+Create a lead for Rahul Sharma from ABC Technologies with phone 9876543210
+
+The AI agent identifies the appropriate business tool, validates the request, and executes the action through the backend.
+
+👥 Lead Management
+
+Manage business leads directly from the dashboard.
+
+➕ Create leads
+🔍 Search leads
+✏️ Update leads
+🗑️ Delete leads
+📌 Track lead status
+🤖 Create and search leads through AI commands
+🏢 Customer Management
+
+Maintain customer information in a centralized CRM workspace.
+
+Add customers
+Search customers
+Update customer information
+Delete customers
+Track customer status
+✅ Task Management
+
+Create and manage business tasks.
+
+Create tasks
+Set priorities
+Track task status
+Update tasks
+Mark tasks as completed
+AI-powered task creation
+
+Example:
+
+Create a task for Rahul to follow up tomorrow
+🔐 Authentication & Authorization
+
+AutomateAI uses secure authentication with:
+
+JWT-based sessions
+bcrypt password hashing
+Protected API routes
+User-specific data access
+Authorization headers
+User-scoped CRM data
+
+Each user's Leads, Customers, Tasks, Activities, Approvals and AI history are isolated from other users.
+
+📋 Approval Workflow
+
+AutomateAI follows a Human-in-the-Loop approach for sensitive actions.
+
+User Request
+      ↓
+AI Command Center
+      ↓
+Tool Selection
+      ↓
+Validation
+      ↓
+Approval Required?
+    ↙       ↘
+  YES        NO
+   ↓          ↓
+Approval    Execute
+  Queue      Action
+   ↓
+Approve / Reject
+
+This prevents sensitive AI-generated operations from being executed without user review.
+
+📊 Dashboard & Analytics
+
+The dashboard provides an overview of business activity including:
+
+Total Leads
+Active Customers
+Task Completion
+AI Actions
+Recent Activity
+Pending Approvals
+Lead analytics
+📚 Knowledge Base
+
+AutomateAI includes a knowledge-base module for working with business documents.
+
+Supported document formats include:
+
+PDF
+TXT
+Markdown
+
+The system can process documents and provide knowledge-base based responses.
+
+📧 Email Workspace
+
+The email workspace supports:
+
+Email drafts
+Email history
+Manual email operations
+AI-generated follow-up drafts
+Approval-based email actions
+
+AI-generated follow-up emails are placed into the approval queue before sensitive actions are performed.
+
+🧠 Example AI Commands
+
+Once an LLM provider is configured, users can try:
+
+Create a lead for Rahul Sharma from ABC Technologies with phone 987654
+Show me all leads that are currently qualified
+Create a task for Rahul to follow up tomorrow
+Draft a follow-up email for Rahul regarding our CRM productGive me a summary of our current sales activity
+
+
+
+🛠️ Technology Stack
+🎨 Frontend
+⚛️ React.js
+⚡ Vite
+🎨 Tailwind CSS
+🟨 JavaScript
+🔗 REST API
+🧩 Lucide React
+⚙️ Backend
+🐍 Python
+🚀 FastAPI
+🗄️ SQLAlchemy
+📦 Pydantic
+🔐 JWT Authentication
+🔒 bcrypt
+🗃️ Database
+SQLite — local development
+PostgreSQL-compatible architecture for production
+🤖 AI & Automation
+LLM-based AI Agent
+Tool Calling
+AI Command Center
+Knowledge Base / RAG
+Human-in-the-Loop approvals
+n8n workflow structure
+☁️ Deployment & Development
+GitHub
+Render
+Git
+REST APIs
+🏗️ System Architecture
+                         👤 USER
+                           │
+                           ▼
+                ┌─────────────────────┐
+                │   React Frontend    │
+                │   Vite + Tailwind   │
+                └──────────┬──────────┘
+                           │
+                      REST API + JWT
+                           │
+                           ▼
+                ┌─────────────────────┐
+                │   FastAPI Backend   │
+                │       Python        │
+                └──────┬───────┬──────┘
+                       │       │
+              ┌────────┘       └─────────┐
+              ▼                          ▼
+      ┌───────────────┐         ┌─────────────────┐
+      │   Database    │         │ AI Command      │
+      │ SQLite / PG   │         │ Center          │
+      └───────────────┘         └────────┬────────┘
+                                         │
+                                         ▼
+                                ┌─────────────────┐
+                                │   LLM Provider  │
+                                └─────────────────┘
+📁 Project Structure
 automate-ai/
-├── frontend/              # React + Vite + Tailwind CSS app
-│   ├── .env.example        # VITE_API_URL template
-│   └── src/
-│       ├── components/     # Sidebar, Topbar, dashboard cards, shared UI
-│       ├── pages/          # Dashboard, Leads, Customers, Tasks, ComingSoon
-│       ├── hooks/          # useFetch — loading/error-aware data fetching
-│       ├── lib/            # api.js (backend client), time/activity helpers
-│       └── data/           # navigation.js (sidebar routes)
-├── backend/                # Python + FastAPI app
-│   ├── main.py              # App entry point, CORS, startup seeding
-│   ├── database.py          # SQLAlchemy engine/session (SQLite by default)
-│   ├── models.py            # Lead, Customer, Task, Activity
-│   ├── schemas.py           # Pydantic request/response models
-│   ├── seed.py               # Demo data inserted automatically if DB is empty
+│
+├── frontend/
+│   ├── src/
+│   │   ├── components/
+│   │   ├── pages/
+│   │   ├── hooks/
+│   │   ├── lib/
+│   │   └── data/
+│   ├── .env.example
+│   └── package.json
+│
+├── backend/
+│   ├── main.py
+│   ├── database.py
+│   ├── models.py
+│   ├── schemas.py
+│   ├── seed.py
 │   ├── requirements.txt
+│   ├── services/
 │   └── routes/
-│       ├── dashboard.py      # /api/dashboard/*
-│       ├── leads.py          # /api/leads*
-│       ├── customers.py      # /api/customers*
-│       └── tasks.py          # /api/tasks*
-├── n8n-workflows/          # n8n workflow exports (added in a later phase)
-├── docs/                    # Project documentation
-├── .env.example             # Root template for future shared secrets
+│
+├── docs/
+│   ├── DEPLOYMENT.md
+│   └── ai-architecture.md
+│
+├── n8n-workflows/
+│
+├── .env.example
 ├── .gitignore
+├── render.yaml
 └── README.md
-```
 
-## Quick Start & Running the Final Project
 
-### 1. Backend Setup
-```bash
+🚀 Getting Started
+1️⃣ Clone the Repository
+git clone https://github.com/dishagaur08/automate-ai.git
+cd automate-ai
+2️⃣ Backend Setup
+
+Navigate to the backend:
+
 cd backend
-# Create and activate virtual environment (if not already present)
-python -m venv venv
-.\venv\Scripts\activate   # On Windows (or source venv/bin/activate on Linux/macOS)
 
-# Install dependencies
+Create a virtual environment:
+
+python -m venv venv
+Windows
+.\venv\Scripts\activate
+Linux / macOS
+source venv/bin/activate
+
+Install dependencies:
+
 pip install -r requirements.txt
 
-```bash
-cd backend
+Create your environment file:
+
+Windows
+copy .env.example .env
+Linux / macOS
 cp .env.example .env
-```
 
-(On Windows: `copy .env.example .env`.) You can leave `LLM_API_KEY` blank
-— the backend still starts and everything except the AI Command Center
-works normally. See [Environment Variables](#environment-variables) below.
+Start the backend:
 
-```bash
 uvicorn main:app --reload
-```
 
-The API will be available at `http://127.0.0.1:8000`. On first run it
-automatically creates `backend/automateai.db` (SQLite) and — only if the
-database is empty — inserts realistic demo leads, customers, tasks, and
-activity log entries. Delete `automateai.db` at any time to reset and
-re-seed on the next startup.
+Backend will run at:
 
-Interactive API docs (auto-generated by FastAPI): `http://127.0.0.1:8000/docs`
+http://127.0.0.1:8000
+3️⃣ Backend API Documentation
 
-## Frontend — Installing
+FastAPI automatically provides interactive API documentation.
 
-Requirements: [Node.js](https://nodejs.org/) 18+ installed.
+Open:
 
-```bash
+http://127.0.0.1:8000/docs
+
+Health check:
+
+http://127.0.0.1:8000/health
+
+Expected:
+
+{
+  "status": "healthy"
+}
+4️⃣ Frontend Setup
+
+Open a new terminal and navigate to:
+
 cd frontend
+
+Install dependencies:
+
 npm install
-```
 
-Copy the environment template so the frontend knows where the API lives:
+Create the environment file:
 
-```bash
+Windows
+copy .env.example .env
+Linux / macOS
 cp .env.example .env
-```
 
-(On Windows: `copy .env.example .env`.) The default value
-(`VITE_API_URL=http://127.0.0.1:8000`) matches the backend's default — you
-only need to change it if you run the API on a different host/port.
+Set the backend URL:
 
-## Frontend — Running
+VITE_API_URL=http://127.0.0.1:8000
 
-**Start the backend first**, then in a separate terminal:
+Start the frontend:
 
-```bash
-cd frontend
 npm run dev
-```
 
-Open the URL shown in the terminal — normally `http://localhost:5173`.
+Frontend will normally run at:
 
-- **Dashboard** — welcome hero, key metrics, AI activity, lead analytics
-  chart, recent activity, and the "Ask AutomateAI" card, all backed by the
-  live API.
-- **Leads / CRM** — real leads list from the database, with add and delete.
-- **Customers** — real customers list from the database.
-- **Tasks** — real tasks list from the database, with add.
-- **AI Agent, Knowledge Base, Emails** — live AI/RAG/email modules.
-- **Workflows, Analytics, Settings** — polished "coming soon" placeholders.
+http://localhost:5173
+🔐 Environment Variables
+Backend
 
-If the backend isn't running, each section shows a graceful error message
-with a retry option instead of breaking the page.
+Create:
 
-## API Endpoints (Phase 7 — auth + CRUD + RAG + email + AI)
+backend/.env
 
-All endpoints below except `/`, `/health`, `/api/auth/register`, and
-`/api/auth/login` require `Authorization: Bearer <token>` and are scoped
-to the logged-in user.
+Example:
 
-| Method | Path                          | Description                              |
-|--------|-------------------------------|-------------------------------------------|
-| GET    | `/`                            | API health message                        |
-| GET    | `/health`                      | `{"status": "healthy"}`                   |
-| POST   | `/api/auth/register`           | Create an account, returns a JWT          |
-| POST   | `/api/auth/login`              | Log in, returns a JWT                     |
-| GET    | `/api/auth/me`                 | Current logged-in user                    |
-| GET    | `/api/dashboard/stats`         | Total leads, active customers, task completion %, AI actions, pending approvals |
-| GET    | `/api/dashboard/activity`      | Recent activity log (`?limit=` optional)  |
-| GET    | `/api/dashboard/lead-analytics`| Leads created per day, last 7 days        |
-| GET    | `/api/leads`                   | List leads (`?search=`, `?status=`)       |
-| GET    | `/api/leads/{id}`              | Get one lead                              |
-| POST   | `/api/leads`                   | Create a lead                             |
-| PATCH  | `/api/leads/{id}`               | Update a lead (partial)                   |
-| DELETE | `/api/leads/{id}`              | Delete a lead                             |
-| GET    | `/api/customers`               | List customers (`?search=`, `?status=`)   |
-| GET    | `/api/customers/{id}`          | Get one customer                          |
-| POST   | `/api/customers`                | Create a customer                         |
-| PATCH  | `/api/customers/{id}`           | Update a customer (partial)               |
-| DELETE | `/api/customers/{id}`           | Delete a customer                         |
-| GET    | `/api/tasks`                   | List tasks (`?search=`, `?status=`, `?priority=`) |
-| GET    | `/api/tasks/{id}`                | Get one task                              |
-| POST   | `/api/tasks`                   | Create a task                             |
-| PATCH  | `/api/tasks/{id}`                | Update a task — including marking complete/incomplete via `status` |
-| DELETE | `/api/tasks/{id}`                | Delete a task                             |
-| GET    | `/api/approvals`                 | List approvals (`?status=Pending`)        |
-| PATCH  | `/api/approvals/{id}`            | Approve or reject a pending item          |
-| POST   | `/api/ai/command`                | Send a natural-language command to the AI agent |
-| GET    | `/api/ai/activity`               | Recent AI command history (`?limit=`)     |
-| POST   | `/api/ai/approvals/{id}/approve` | Approve a pending AI-drafted item         |
-| POST   | `/api/ai/approvals/{id}/reject`  | Reject a pending AI-drafted item          |
-| GET    | `/api/documents`                  | List the user's Knowledge Base documents |
-| POST   | `/api/documents`                  | Upload and index a PDF/TXT/MD document   |
-| DELETE | `/api/documents/{id}`             | Delete a user's document                 |
-| POST   | `/api/knowledge-base/query`       | Ask a question against owned documents   |
-| GET    | `/api/emails`                     | List email history and drafts            |
-| POST   | `/api/emails/draft`               | Save a draft                             |
-| POST   | `/api/emails/send`                | Send a manual email                      |
-| POST   | `/api/emails/{id}/send`           | Send an existing draft/failed email      |
-
-## AI Command Center (Phase 4)
-
-The AI Command Center (sidebar → "AI Command Center", or `/ai-agent`) lets
-you type a request in plain English. The backend agent decides which
-**tool** to call, validates its arguments, and executes it through the
-same logic the rest of the app uses. See
-[`docs/ai-architecture.md`](docs/ai-architecture.md) for the full request
-flow diagram and design rationale.
-
-**Available tools:**
-
-| Tool | What it does |
-|------|--------------|
-| `create_lead` | Creates a new lead |
-| `search_leads` | Searches/lists leads by text and/or status |
-| `get_lead` | Looks up one lead by id or name |
-| `create_task` | Creates a new task (resolves relative dates like "tomorrow") |
-| `search_tasks` | Searches/lists tasks by text, status, and/or priority |
-| `search_customers` | Searches/lists customers by text and/or status |
-| `get_dashboard_summary` | Returns a summary of current business metrics |
-| `draft_followup_email` | Drafts an email and places it in the Approval queue — **never sends it** |
-
-**Without an LLM provider configured**, the Command Center still loads
-and works — it responds with a clear "AI provider not configured"
-message instead of erroring or faking a response. Every other part of
-AutomateAI is unaffected.
-
-## Authentication (Phase 5)
-
-Every account is a `User` row in the database (bcrypt-hashed password,
-never plaintext). Logging in or registering returns a JWT access token;
-the frontend stores it and attaches `Authorization: Bearer <token>` to
-every API request automatically (`frontend/src/lib/api.js`). If a
-request comes back `401` (expired/invalid token), the frontend clears
-the session and redirects to `/login`.
-
-**Data ownership:** every Lead, Customer, Task, Approval, Activity, and
-AI command log now has an `owner_id`. All list/get/update/delete
-queries — including the ones the AI Command Center's tools use — are
-filtered to the logged-in user's own `owner_id`, so one user's CRM data,
-approvals, and AI history are never visible to another user.
-
-**Demo login** (seeded automatically on first backend startup):
-- Email: `demo@automateai.app`
-- Password: `Demo1234!`
-
-**Try it:**
-1. Start the backend and frontend (see below).
-2. Visit the frontend — you'll be redirected to `/login`.
-3. Log in with the demo account above, or click "Create one" to register
-   a brand-new account (which starts with zero data, proving the
-   per-user scoping works).
-
-## Environment Variables
-
-**`backend/.env`** (copy from `backend/.env.example`):
-- `LLM_API_KEY` — your AI provider's API key. Leave empty to run without
-  AI features.
-- `LLM_MODEL` — model name (default `gpt-4o-mini`).
-- `LLM_BASE_URL` — API base URL (default `https://api.openai.com/v1`).
-  Point this at any OpenAI-compatible provider (Groq, Together AI,
-  OpenRouter, a local vLLM/Ollama server, etc.) to switch providers
-  without touching code.
-- `DATABASE_URL` — optional; defaults to a local SQLite file if unset.
-- `SMTP_HOST` — SMTP server hostname.
-- `SMTP_PORT` — SMTP port (587 by default; 465 is supported for SSL).
-- `SMTP_USERNAME` / `SMTP_PASSWORD` — SMTP credentials.
-- `SMTP_FROM_EMAIL` — verified sender address.
-- `SMTP_USE_TLS` — `true` by default for STARTTLS on non-465 SMTP.
-
-For local testing without an SMTP provider, email drafts/history still work;
-actual sending returns a clear configuration error until SMTP is configured.
-The architecture is intentionally kept database-agnostic so swapping in
-PostgreSQL later is just a connection string change.
-- `JWT_SECRET` — signs login session tokens. Generate one with
-  `python -c "import secrets; print(secrets.token_hex(32))"`. If left
-  empty, the backend generates a random secret at startup (with a
-  console warning) so local dev still works, but every restart
-  invalidates existing logins — **always set a real value outside of
-  local development.**
-- `JWT_EXPIRE_MINUTES` — how long a login session lasts, in minutes
-  (default `1440`, i.e. 24 hours).
-
-**`frontend/.env`** (copy from `frontend/.env.example`):
-- `VITE_API_URL` — base URL of the backend API.
-
-**Root `.env.example`** — a documentation-level pointer to the two real
-`.env` files above, plus a placeholder for a secret needed by a *future*
-phase:
-
-- `GEMINI_API_KEY` — legacy placeholder; not read anywhere (LLM_API_KEY
-  above is the one actually used)
-- `N8N_WEBHOOK_URL` — for workflow automation (later phase)
-
-**Never commit a real `.env` file.** All `.env` files and the SQLite
-database (`*.db`) are already excluded via `.gitignore`.
-
-## Future Development Phases
-
-1. ~~**Authentication** — Login/Register, JWT-based sessions~~ ✅ done (Phase 5)
-2. **RAG / Knowledge Base** — document upload + search-based Q&A the AI
-   can draw on (the AI Command Center currently answers from the CRM
-   database only, not from company documents)
-3. **Email sending** — actually sending an approved draft, not just
-   storing it
-4. **Workflow automation** — n8n integration via API and webhooks
-5. **Analytics** — deeper reporting beyond the dashboard's overview charts
-6. **Settings** — company profile, integrations, and user management
-7. **Production database** — swap SQLite for PostgreSQL
-
-Each phase will be built as its own small, testable step.
-
-## Example AI Commands to Try
-
-Once `LLM_API_KEY` is set, open the AI Command Center and try:
-
-1. `Create a lead for Rahul Sharma from ABC Technologies with phone 9876543210`
-2. `Show me all leads that are currently qualified`
-3. `Create a task for Rahul to follow up tomorrow`
-4. `Draft a follow-up email for Rahul regarding our CRM product`
-5. `Give me a summary of our current sales activity`
-
-After #4, check the Dashboard's "Review approvals" button — the draft
-should be waiting there, unsent, until you approve or reject it.
-
-## Known Limitations (Phase 4)
-
-- The AI only knows what's in the CRM database — it has no access to
-  uploaded company documents yet (that's the RAG/Knowledge Base phase).
-- `draft_followup_email` creates an approval but does not send email —
-  no email-sending integration exists yet.
-- The agent handles one command at a time; it doesn't hold multi-turn
-  memory of earlier commands in the same session.
-- Tool selection quality depends entirely on the configured LLM —
-  behavior will vary between providers/models.
-- This was built and statically verified without a live Python/Node
-  runtime available in the build environment — see the PR/commit notes
-  for exactly what was checked vs. what still needs a real local run.
+LLM_API_KEY=
+LLM_MODEL=gpt-4o-mini
+LLM_BASE_URL=https://api.openai.com/v1
 
 
-## Production deployment
-See `docs/DEPLOYMENT.md` and `render.yaml` for the supported production architecture and environment configuration.
+DATABASE_URL=
+
+
+JWT_SECRET=
+JWT_EXPIRE_MINUTES=1440
+
+
+SMTP_HOST=
+SMTP_PORT=587
+SMTP_USERNAME=
+SMTP_PASSWORD=
+SMTP_FROM_EMAIL=
+SMTP_USE_TLS=true
+Frontend
+
+Create:
+
+frontend/.env
+
+Example:
+
+VITE_API_URL=http://127.0.0.1:8000
+
+⚠️ Never commit real .env files, passwords, JWT secrets, SMTP credentials or API keys to GitHub.
+
+🔌 API Endpoints
+🔐 Authentication
+POST /api/auth/register
+POST /api/auth/login
+GET  /api/auth/me
+📊 Dashboard
+GET /api/dashboard/stats
+GET /api/dashboard/activity
+GET /api/dashboard/lead-analytics
+👥 Leads
+GET    /api/leads
+GET    /api/leads/{id}
+POST   /api/leads
+PATCH  /api/leads/{id}
+DELETE /api/leads/{id}
+🏢 Customers
+GET    /api/customers
+GET    /api/customers/{id}
+POST   /api/customers
+PATCH  /api/customers/{id}
+DELETE /api/customers/{id}
+✅ Tasks
+GET    /api/tasks
+GET    /api/tasks/{id}
+POST   /api/tasks
+PATCH  /api/tasks/{id}
+DELETE /api/tasks/{id}
+🤖 AI
+POST /api/ai/command
+GET  /api/ai/activity
+POST /api/ai/approvals/{id}/approve
+POST /api/ai/approvals/{id}/reject
+📚 Knowledge Base
+GET    /api/documents
+POST   /api/documents
+DELETE /api/documents/{id}
+POST   /api/knowledge-base/query
+📧 Email
+GET  /api/emails
+POST /api/emails/draft
+POST /api/emails/send
+POST /api/emails/{id}/send
+🧰 AI Tools
+
+The AI Command Center can work with business tools such as:
+
+Tool	Purpose
+create_lead	Create a new lead
+search_leads	Search leads
+get_lead	Retrieve a lead
+create_task	Create a task
+search_tasks	Search tasks
+search_customers	Search customers
+get_dashboard_summary	Get business metrics
+draft_followup_email	Create an email draft for approval
+🔒 Security
+
+AutomateAI follows several security practices:
+
+🔐 JWT-based authentication
+🔑 bcrypt password hashing
+👤 User-scoped data
+🛡️ Protected API routes
+📋 Human approval for sensitive AI actions
+🚫 .env files excluded from Git
+🔒 Secrets managed through environment variables
+📈 Project Status
+✅ Completed
+ Modern React dashboard
+ FastAPI backend
+ Database integration
+ Lead management
+ Customer management
+ Task management
+ CRUD operations
+ Authentication
+ JWT authorization
+ User-scoped data
+ AI Command Center
+ AI tool calling
+ Approval workflow
+ Knowledge Base module
+ Email workspace
+ GitHub repository
+ Render deployment
+ Production API health check
+🔮 Future Improvements
+📊 Advanced analytics and reporting
+🔄 More business automation workflows
+🔌 Additional third-party integrations
+🤖 More advanced AI agents and tools
+👥 Team and organization management
+🗃️ Production-scale database optimization
+⚙️ Advanced workflow automation
+🧪 Production Health Check
+
+The deployed backend can be checked using:
+
+https://automateai-api.onrender.com/health
+
+Current response:
+
+{
+  "status": "healthy"
+}
+📚 Documentation
+
+Detailed project documentation is available inside the repository:
+
+📘 docs/DEPLOYMENT.md
+🧠 docs/ai-architecture.md
+👩‍💻 Author
+Disha Gaur
+
+Computer Science & Engineering
+
+🔗 GitHub:
+https://github.com/dishagaur08
+
+🔗 Project Repository:
+https://github.com/dishagaur08/automate-ai
+
+⭐ Support
+
+If you find this project interesting, consider giving the repository a ⭐ on GitHub.
+
+<p align="center">
+🤖 AutomateAI
+
+<b>One workspace. One AI agent. Smarter business automation.</b>
+
+</p> ```
