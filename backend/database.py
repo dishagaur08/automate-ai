@@ -16,7 +16,7 @@ load_dotenv()  # picks up backend/.env if present (e.g. a real DATABASE_URL)
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 DATABASE_URL = os.getenv(
-    "DATABASE_URL", f"sqlite:///{os.path.join(BASE_DIR, 'automate_ai.db')}"
+    "DATABASE_URL", f"sqlite:///{os.path.join(BASE_DIR, 'automateai.db')}"
 )
 
 # check_same_thread is only needed for SQLite (FastAPI uses multiple threads).

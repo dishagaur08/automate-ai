@@ -13,10 +13,19 @@ from database import get_db
 from models import AICommandLog, User
 from routes.approvals import resolve_approval
 from schemas import AICommandLogOut, AICommandRequest, AICommandResponse, ApprovalOut
-from services import ai_agent
+from services import ai_agent, llm_client
 from services.auth import get_current_user
 
 router = APIRouter(prefix="/api/ai", tags=["ai"])
+
+
+@router.get("/status")
+def get_ai_status(current_user: User = Depends(get_current_user)):
+    return {
+        "configured": llm_client.is_configured(),
+        "provider": "Groq" if llm_client.is_configured() else "None",
+        "model": llm_client._get_model() if llm_client.is_configured() else None,
+    }
 
 
 @router.post("/command", response_model=AICommandResponse)

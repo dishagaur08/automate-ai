@@ -126,6 +126,19 @@ export default function CommandCenter() {
   const scrollRef = useRef(null)
   const inputRef = useRef(null)
 
+  // Fetch AI status and recent activity on mount
+  useEffect(() => {
+    async function checkStatus() {
+      try {
+        const res = await api.ai.status()
+        setProviderStatus(res.configured ? 'configured' : 'not_configured')
+      } catch {
+        setProviderStatus('unknown')
+      }
+    }
+    checkStatus()
+  }, [])
+
   // If we arrived here via a suggestion chip clicked on the Dashboard,
   // prefill the input with it.
   useEffect(() => {

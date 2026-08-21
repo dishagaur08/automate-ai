@@ -73,29 +73,17 @@ automate-ai/
 └── README.md
 ```
 
-## Backend — Installing
+## Quick Start & Running the Final Project
 
-Requirements: Python 3.10+ installed.
-
+### 1. Backend Setup
 ```bash
 cd backend
+# Create and activate virtual environment (if not already present)
 python -m venv venv
-```
+.\venv\Scripts\activate   # On Windows (or source venv/bin/activate on Linux/macOS)
 
-Activate the virtual environment:
-
-- **Windows:** `venv\Scripts\activate`
-- **Mac/Linux:** `source venv/bin/activate`
-
-Then install dependencies:
-
-```bash
+# Install dependencies
 pip install -r requirements.txt
-```
-
-## Backend — Running
-
-Copy the environment template and (optionally) add your AI provider key:
 
 ```bash
 cd backend

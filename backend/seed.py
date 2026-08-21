@@ -18,7 +18,7 @@ from datetime import datetime, timedelta
 
 from sqlalchemy.orm import Session
 
-from models import Approval, EmailMessage, Lead, Customer, Task, Activity, User
+from models import AICommandLog, Approval, EmailMessage, Lead, Customer, Task, Activity, User
 import os
 from services.auth import hash_password
 
@@ -189,6 +189,25 @@ def seed_if_empty(db: Session) -> None:
                 body=content,
                 status="Pending Approval",
                 created_at=now - timedelta(minutes=minutes_ago),
+            )
+        )
+    ai_logs_data = [
+        ("Create a lead for Rahul Sharma from ABC Company", "create_lead", "success", "Lead created successfully for Rahul Sharma at ABC Company.", 12),
+        ("Show me all qualified leads", "search_leads", "success", "Found 3 lead(s): Rahul Sharma, Karan Mehta, Divya Pillai.", 35),
+        ("Create a high priority task to review proposal", "create_task", "success", "Task created: “Review proposal for Nova Retail”.", 80),
+        ("Draft a follow-up email for Priya Nair", "draft_followup_email", "success", "Drafted a follow-up email for Priya Nair — sent for your approval.", 140),
+        ("What is the pricing for our CRM enterprise plan?", "answer_from_knowledge_base", "success", "Our CRM plans start at ₹4,999/mo for up to 10 seats, with custom enterprise quotes available.", 260),
+    ]
+    for prompt, tool, status, summary, minutes_ago in ai_logs_data:
+        db.add(
+            AICommandLog(
+                user_request=prompt,
+                tool_name=tool,
+                status=status,
+                result_summary=summary,
+                error_message=None,
+                created_at=now - timedelta(minutes=minutes_ago),
+                owner_id=owner_id,
             )
         )
 

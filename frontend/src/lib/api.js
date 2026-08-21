@@ -114,6 +114,7 @@ export const api = {
   },
 
   ai: {
+    status: () => apiFetch('/api/ai/status'),
     command: (command) => apiFetch('/api/ai/command', { method: 'POST', body: JSON.stringify({ command }) }),
     activity: (params) => apiFetch(`/api/ai/activity${toQuery(params)}`),
     approve: (id) => apiFetch(`/api/ai/approvals/${id}/approve`, { method: 'POST' }),

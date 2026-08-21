@@ -12,16 +12,30 @@ converts them into LLMError with a message that is safe to show a user
 """
 
 import os
+from pathlib import Path
 from typing import Optional
 
 import requests
 from dotenv import load_dotenv
 
-load_dotenv()  # harmless if database.py already loaded it
+# Always load the backend/.env file regardless of where
+# uvicorn is started from.
+BACKEND_DIR = Path(__file__).resolve().parents[1]
+ENV_FILE = BACKEND_DIR / ".env"
 
-LLM_API_KEY = os.getenv("LLM_API_KEY", "").strip()
-LLM_MODEL = os.getenv("LLM_MODEL", "gpt-4o-mini").strip()
-LLM_BASE_URL = os.getenv("LLM_BASE_URL", "https://api.openai.com/v1").strip().rstrip("/")
+load_dotenv(dotenv_path=ENV_FILE, override=False)  # harmless if database.py already loaded it
+
+# Prioritize GROQ_API_KEY, fallback to LLM_API_KEY
+def _get_api_key() -> str:
+    return (os.getenv("GROQ_API_KEY", "").strip() or os.getenv("LLM_API_KEY", "").strip())
+
+def _get_base_url() -> str:
+    return os.getenv(
+        "LLM_BASE_URL",
+        "https://api.groq.com/openai/v1"
+    ).strip().rstrip("/")
+def _get_model() -> str:
+    return os.getenv("LLM_MODEL", "llama-3.3-70b-versatile").strip()
 
 REQUEST_TIMEOUT_SECONDS = 30
 
@@ -31,7 +45,7 @@ class LLMError(Exception):
 
 
 def is_configured() -> bool:
-    return bool(LLM_API_KEY)
+    return bool(_get_api_key())
 
 
 def chat_completion(messages: list[dict], tools: Optional[list[dict]] = None) -> dict:
@@ -43,16 +57,20 @@ def chat_completion(messages: list[dict], tools: Optional[list[dict]] = None) ->
     if not is_configured():
         raise LLMError("AI provider is not configured.")
 
-    payload = {"model": LLM_MODEL, "messages": messages}
+    api_key = _get_api_key()
+    base_url = _get_base_url()
+    model = _get_model()
+
+    payload = {"model": model, "messages": messages}
     if tools:
         payload["tools"] = tools
         payload["tool_choice"] = "auto"
 
     try:
         response = requests.post(
-            f"{LLM_BASE_URL}/chat/completions",
+            f"{base_url}/chat/completions",
             headers={
-                "Authorization": f"Bearer {LLM_API_KEY}",
+                "Authorization": f"Bearer {api_key}",
                 "Content-Type": "application/json",
             },
             json=payload,

@@ -34,12 +34,23 @@ from routes.leads import (
     create_lead_logic,
     get_lead_logic,
     list_leads_logic,
+    update_lead_logic,
 )
-from routes.tasks import create_task_logic, list_tasks_logic
-from routes.customers import list_customers_logic
+from routes.tasks import create_task_logic, get_task_logic, list_tasks_logic, update_task_logic
+from routes.customers import create_customer_logic, get_customer_logic, list_customers_logic
 from routes.dashboard import compute_stats
 from routes.approvals import create_approval
-from schemas import LeadCreate, LeadOut, TaskCreate, TaskOut, CustomerOut
+from schemas import (
+    CustomerCreate,
+    CustomerOut,
+    CustomerUpdate,
+    LeadCreate,
+    LeadOut,
+    LeadUpdate,
+    TaskCreate,
+    TaskOut,
+    TaskUpdate,
+)
 from services import llm_client, rag
 from services.llm_client import LLMError
 from services.rag import RAGError
@@ -110,6 +121,28 @@ class AnswerFromKnowledgeBaseArgs(BaseModel):
     question: str
 
 
+class UpdateLeadArgs(BaseModel):
+    lead_id: Optional[int] = None
+    name: Optional[str] = None
+    status: Optional[str] = None  # New, Qualified, Negotiation, Lost
+    company: Optional[str] = None
+    email: Optional[str] = None
+    phone: Optional[str] = None
+
+
+class UpdateTaskArgs(BaseModel):
+    task_id: Optional[int] = None
+    title: Optional[str] = None
+    status: Optional[str] = None  # Pending, In Progress, Completed
+    priority: Optional[str] = None  # Low, Medium, High
+    due_date: Optional[str] = None
+
+
+class CompleteTaskArgs(BaseModel):
+    task_id: Optional[int] = None
+    title: Optional[str] = None
+
+
 # ---------------------------------------------------------------------------
 # Handlers. Every handler receives (db, user, args) — `user` is the
 # authenticated caller, and every *_logic call below is scoped to
@@ -157,12 +190,95 @@ def _handle_get_lead(db: Session, user: User, args: GetLeadArgs) -> ToolResult:
     )
 
 
+def _handle_update_lead(db: Session, user: User, args: UpdateLeadArgs) -> ToolResult:
+    lead = None
+    if args.lead_id is not None:
+        lead = get_lead_logic(db, user.id, args.lead_id)
+    elif args.name:
+        matches = list_leads_logic(db, user.id, search=args.name)
+        lead = matches[0] if matches else None
+    else:
+        raise ToolError("Provide either lead_id or name to update the lead.")
+
+    if lead is None:
+        who = args.name or f"id {args.lead_id}"
+        raise ToolError(f"No lead found matching \u201c{who}\u201d.")
+
+    update_payload = LeadUpdate(
+        status=args.status,
+        company=args.company,
+        email=args.email,
+        phone=args.phone,
+    )
+    updated = update_lead_logic(db, lead, update_payload)
+    return ToolResult(
+        message=f"Lead \u201c{updated.name}\u201d updated (status: {updated.status}).",
+        data=LeadOut.model_validate(updated).model_dump(mode="json"),
+    )
+
+
+def _handle_create_customer(db: Session, user: User, args: CustomerCreate) -> ToolResult:
+    customer = create_customer_logic(db, user.id, args)
+    where = f" at {customer.company}" if customer.company else ""
+    return ToolResult(
+        message=f"Customer account created for {customer.name}{where}.",
+        data=CustomerOut.model_validate(customer).model_dump(mode="json"),
+    )
+
+
 def _handle_create_task(db: Session, user: User, args: TaskCreate) -> ToolResult:
     task = create_task_logic(db, user.id, args)
     due = f" (due {task.due_date})" if task.due_date else ""
     return ToolResult(
         message=f"Task created: \u201c{task.title}\u201d{due}.",
         data=TaskOut.model_validate(task).model_dump(mode="json"),
+    )
+
+
+def _handle_update_task(db: Session, user: User, args: UpdateTaskArgs) -> ToolResult:
+    task = None
+    if args.task_id is not None:
+        task = get_task_logic(db, user.id, args.task_id)
+    elif args.title:
+        matches = list_tasks_logic(db, user.id, search=args.title)
+        task = matches[0] if matches else None
+    else:
+        raise ToolError("Provide a task_id or title to update the task.")
+
+    if task is None:
+        which = args.title or f"id {args.task_id}"
+        raise ToolError(f"No task found matching \u201c{which}\u201d.")
+
+    update_payload = TaskUpdate(
+        status=args.status,
+        priority=args.priority,
+        due_date=args.due_date,
+    )
+    updated = update_task_logic(db, task, update_payload)
+    return ToolResult(
+        message=f"Task \u201c{updated.title}\u201d updated (status: {updated.status}).",
+        data=TaskOut.model_validate(updated).model_dump(mode="json"),
+    )
+
+
+def _handle_complete_task(db: Session, user: User, args: CompleteTaskArgs) -> ToolResult:
+    task = None
+    if args.task_id is not None:
+        task = get_task_logic(db, user.id, args.task_id)
+    elif args.title:
+        matches = list_tasks_logic(db, user.id, search=args.title)
+        task = matches[0] if matches else None
+    else:
+        raise ToolError("Provide a task_id or title to complete.")
+
+    if task is None:
+        which = args.title or f"id {args.task_id}"
+        raise ToolError(f"No task found matching \u201c{which}\u201d.")
+
+    updated = update_task_logic(db, task, TaskUpdate(status="Completed"))
+    return ToolResult(
+        message=f"Task \u201c{updated.title}\u201d marked as Completed.",
+        data=TaskOut.model_validate(updated).model_dump(mode="json"),
     )
 
 
@@ -340,6 +456,30 @@ TOOLS: dict[str, Tool] = {
         "task completion rate, and pending approvals.",
         args_model=NoArgs,
         handler=_handle_dashboard_summary,
+    ),
+    "create_customer": Tool(
+        name="create_customer",
+        description="Create a new customer record in the CRM.",
+        args_model=CustomerCreate,
+        handler=_handle_create_customer,
+    ),
+    "update_lead": Tool(
+        name="update_lead",
+        description="Update an existing lead's status (New, Qualified, Negotiation, Lost), company, email, or phone by lead_id or lead name.",
+        args_model=UpdateLeadArgs,
+        handler=_handle_update_lead,
+    ),
+    "update_task": Tool(
+        name="update_task",
+        description="Update a task's status, priority, or due_date by task_id or title.",
+        args_model=UpdateTaskArgs,
+        handler=_handle_update_task,
+    ),
+    "complete_task": Tool(
+        name="complete_task",
+        description="Mark a task as Completed by task_id or title.",
+        args_model=CompleteTaskArgs,
+        handler=_handle_complete_task,
     ),
     "draft_followup_email": Tool(
         name="draft_followup_email",
